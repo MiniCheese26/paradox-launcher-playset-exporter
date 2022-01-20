@@ -39,6 +39,7 @@ export const getPlaySetConfigForPlaySet = async (db: Database, playSet: PlaySet)
   const result = rows.map(row => ({...row, enabled: row.enabled === 1}));
 
   return {
+    game: 'hoi4',
     name: playSet.name,
     mods: result
   } as PlaysetConfig;
