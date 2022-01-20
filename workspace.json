@@ -1,4 +1,7 @@
 {
   "version": 2,
-  "projects": {}
+  "projects": {
+    "paradox-launcher-playset-manager": "packages/paradox-launcher-playset-manager",
+    "paradox-launcher-playset-manager-lib": "packages/paradox-launcher-playset-manager-lib"
+  }
 }

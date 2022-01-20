@@ -1,0 +1,53 @@
+{
+  "root": "packages/paradox-launcher-playset-manager",
+  "sourceRoot": "packages/paradox-launcher-playset-manager/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/node:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/paradox-launcher-playset-manager",
+        "main": "packages/paradox-launcher-playset-manager/src/main.ts",
+        "tsConfig": "packages/paradox-launcher-playset-manager/tsconfig.app.json"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false,
+          "fileReplacements": [
+            {
+              "replace": "packages/paradox-launcher-playset-manager/src/environments/environment.ts",
+              "with": "packages/paradox-launcher-playset-manager/src/environments/environment.prod.ts"
+            }
+          ]
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/node:execute",
+      "options": {
+        "buildTarget": "paradox-launcher-playset-manager:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/paradox-launcher-playset-manager/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/paradox-launcher-playset-manager"],
+      "options": {
+        "jestConfig": "packages/paradox-launcher-playset-manager/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

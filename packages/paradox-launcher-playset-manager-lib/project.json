@@ -1,0 +1,25 @@
+{
+  "root": "packages/paradox-launcher-playset-manager-lib",
+  "sourceRoot": "packages/paradox-launcher-playset-manager-lib/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/paradox-launcher-playset-manager-lib/**/*.ts"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/paradox-launcher-playset-manager-lib"],
+      "options": {
+        "jestConfig": "packages/paradox-launcher-playset-manager-lib/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
