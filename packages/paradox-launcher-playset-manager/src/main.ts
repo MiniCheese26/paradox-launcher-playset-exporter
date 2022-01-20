@@ -6,25 +6,44 @@ import {
   getAllPlaySets,
   getPlaySetConfigForPlaySet
 } from '@paradox-launcher-playset-manager/paradox-launcher-playset-manager-lib';
+import * as os from 'os';
+
+const validateDbPath = async (filePath: string) => {
+  try {
+    await fs.access(filePath);
+  } catch (ex) {
+    return false;
+  }
+
+  return true;
+};
 
 const main = async () => {
-  const inputFile = await enquirer.prompt<{ filePath: string }>({
-    type: 'input',
-    name: 'filePath',
-    message: 'Please enter the filepath to your launcher-v2.sqlite',
-    required: true,
-    async validate (value: string) {
-      try {
-        await fs.access(value);
-      } catch (ex) {
-        return false;
-      }
+  let dbPath: string;
 
-      return true;
-    },
-  });
+  switch (process.platform) {
+    case 'win32':
+      dbPath = path.join(os.homedir(), '\\Documents\\Paradox Interactive\\Hearts of Iron IV\\launcher-v2.sqlite');
+      break;
+    case 'linux':
+    case 'darwin':
+      dbPath = path.join(os.homedir(), '/Paradox Interactive/Hearts of Iron IV/launcher-v2.sqlite');
+      break;
+  }
 
-  const db = new sqlite3.Database(inputFile.filePath);
+  if (!await validateDbPath(dbPath)) {
+    const inputFile = await enquirer.prompt<{ filePath: string }>({
+      type: 'input',
+      name: 'filePath',
+      message: 'Please enter the filepath to your launcher-v2.sqlite',
+      required: true,
+      validate: validateDbPath,
+    });
+
+    dbPath = inputFile.filePath;
+  }
+
+  const db = new sqlite3.Database(dbPath);
 
   const playSets = await getAllPlaySets(db);
 
@@ -33,17 +52,29 @@ const main = async () => {
     return;
   }
 
-  const prompt = await enquirer.prompt<{ playsets: Record<string, string> }>({
+  if (playSets.length === 0) {
+    console.debug('No playsets found');
+    return;
+  }
+
+  const prompt = await enquirer.prompt<{ playSets: Record<string, string> }>({
     type: 'multiselect',
-    name: 'playsets',
-    message: 'Choose playsets to export',
+    name: 'playSets',
+    message: 'Choose playSets to export (Select none to process all)',
     choices: playSets.map(row => ({name: row.name, value: row.id})),
     result (value: string) {
       return this.map(value);
     }
   });
 
-  for (const [name, id] of Object.entries(prompt.playsets)) {
+  if (Object.entries(prompt.playSets).length === 0) {
+    prompt.playSets = playSets.reduce((total, current) => {
+      total[current.name] = current.id;
+      return total;
+    }, {});
+  }
+
+  for (const [name, id] of Object.entries(prompt.playSets)) {
     const config = await getPlaySetConfigForPlaySet(db, {name, id});
 
     if (config instanceof Error) {
@@ -60,11 +91,10 @@ const main = async () => {
     try {
       await fs.mkdir(path.join(__dirname, 'output'));
     } catch (ex) {
-      if (ex.errno !== -17) {
+      if (ex.code.toLowerCase() !== 'eexist') {
         console.debug(ex);
+        continue;
       }
-
-      continue;
     }
 
     try {
