@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { Mods, PlaySet, PlaysetConfig } from "./types";
+import { ModRow, PlaySet, PlaysetConfig } from "./types";
 import { promisify } from "util";
 
 export const getAllPlaySets = async (db: Database) => {
@@ -18,12 +18,12 @@ export const getAllPlaySets = async (db: Database) => {
 
 export const getPlaySetConfigForPlaySet = async (db: Database, playSet: PlaySet) => {
 
-  const all = promisify<string, unknown[], Mods[]>(db.all.bind(db));
+  const all = promisify<string, unknown[], ModRow[]>(db.all.bind(db));
 
-  let results: Mods[];
+  let rows: ModRow[];
 
   try {
-    results = await all(`
+    rows = await all(`
          SELECT m.displayName, pm.enabled, pm.position, m.steamId FROM playsets p
          JOIN playsets_mods pm on p.id = pm.playsetId
          JOIN mods m on m.id = pm.modId
@@ -34,8 +34,12 @@ export const getPlaySetConfigForPlaySet = async (db: Database, playSet: PlaySet)
     return ex as Error;
   }
 
+  // SQLite stores booleans as 0 or 1, so we need to fix that
+
+  const result = rows.map(row => ({...row, enabled: row.enabled === 1}));
+
   return {
     name: playSet.name,
-    mods: results
+    mods: result
   } as PlaysetConfig;
 };
