@@ -1,12 +1,12 @@
-import * as enquirer from 'enquirer';
-import * as fs from 'fs/promises';
-import * as sqlite3 from 'sqlite3';
-import * as path from 'path';
+import * as enquirer from "enquirer";
+import * as fs from "fs/promises";
+import * as sqlite3 from "sqlite3";
+import * as path from "path";
 import {
   getAllPlaySets,
   getPlaySetConfigForPlaySet
-} from '@paradox-launcher-playset-manager/paradox-launcher-playset-manager-lib';
-import * as os from 'os';
+} from "@paradox-launcher-playset-manager/paradox-launcher-playset-manager-lib";
+import * as os from "os";
 
 const validateDbPath = async (filePath: string) => {
   try {
@@ -22,22 +22,22 @@ const main = async () => {
   let dbPath: string;
 
   switch (process.platform) {
-    case 'win32':
-      dbPath = path.join(os.homedir(), '\\Documents\\Paradox Interactive\\Hearts of Iron IV\\launcher-v2.sqlite');
+    case "win32":
+      dbPath = path.join(os.homedir(), "\\Documents\\Paradox Interactive\\Hearts of Iron IV\\launcher-v2.sqlite");
       break;
-    case 'linux':
-    case 'darwin':
-      dbPath = path.join(os.homedir(), '/Paradox Interactive/Hearts of Iron IV/launcher-v2.sqlite');
+    case "linux":
+    case "darwin":
+      dbPath = path.join(os.homedir(), "/Paradox Interactive/Hearts of Iron IV/launcher-v2.sqlite");
       break;
   }
 
   if (!await validateDbPath(dbPath)) {
     const inputFile = await enquirer.prompt<{ filePath: string }>({
-      type: 'input',
-      name: 'filePath',
-      message: 'Please enter the filepath to your launcher-v2.sqlite',
+      type: "input",
+      name: "filePath",
+      message: "Please enter the filepath to your launcher-v2.sqlite",
       required: true,
-      validate: validateDbPath,
+      validate: validateDbPath
     });
 
     dbPath = inputFile.filePath;
@@ -53,15 +53,15 @@ const main = async () => {
   }
 
   if (playSets.length === 0) {
-    console.debug('No playsets found');
+    console.debug("No playsets found");
     return;
   }
 
   const prompt = await enquirer.prompt<{ playSets: Record<string, string> }>({
-    type: 'multiselect',
-    name: 'playSets',
-    message: 'Choose playSets to export (Select none to process all)',
-    choices: playSets.map(row => ({name: row.name, value: row.id})),
+    type: "multiselect",
+    name: "playSets",
+    message: "Choose playSets to export (Select none to process all)",
+    choices: playSets.map(row => ({ name: row.name, value: row.id })),
     result (value: string) {
       return this.map(value);
     }
@@ -75,7 +75,7 @@ const main = async () => {
   }
 
   for (const [name, id] of Object.entries(prompt.playSets)) {
-    const config = await getPlaySetConfigForPlaySet(db, {name, id});
+    const config = await getPlaySetConfigForPlaySet(db, { name, id });
 
     if (config instanceof Error) {
       console.debug(config);
@@ -85,20 +85,20 @@ const main = async () => {
     const fileContent = JSON.stringify(config, undefined, 2);
     const fileName = `${name}.json`;
 
-    const saveDir = path.join(__dirname, 'output');
+    const saveDir = path.join(__dirname, "output");
     const savePath = path.join(saveDir, fileName);
 
     try {
-      await fs.mkdir(path.join(__dirname, 'output'));
+      await fs.mkdir(path.join(__dirname, "output"));
     } catch (ex) {
-      if (ex.code.toLowerCase() !== 'eexist') {
+      if (ex.code.toLowerCase() !== "eexist") {
         console.debug(ex);
         continue;
       }
     }
 
     try {
-      await fs.writeFile(savePath, fileContent, {encoding: 'utf-8'});
+      await fs.writeFile(savePath, fileContent, { encoding: "utf-8" });
     } catch (ex) {
       console.debug(ex);
     }
@@ -106,7 +106,7 @@ const main = async () => {
     console.debug(`Successfully exported ${fileName}`);
   }
 
-  console.debug('Finished');
+  console.debug("Finished");
 };
 
 (async () => {

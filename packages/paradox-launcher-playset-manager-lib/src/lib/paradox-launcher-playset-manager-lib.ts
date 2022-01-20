@@ -1,6 +1,6 @@
-import {Database} from 'sqlite3';
-import {Mods, PlaySet, PlaysetConfig} from './types';
-import {promisify} from 'util';
+import { Database } from "sqlite3";
+import { Mods, PlaySet, PlaysetConfig } from "./types";
+import { promisify } from "util";
 
 export const getAllPlaySets = async (db: Database) => {
   let playSets: PlaySet[];
@@ -8,7 +8,7 @@ export const getAllPlaySets = async (db: Database) => {
   const all = promisify<string, PlaySet[]>(db.all.bind(db));
 
   try {
-    playSets = await all('SELECT id, name FROM playsets;');
+    playSets = await all("SELECT id, name FROM playsets;");
   } catch (ex) {
     return ex as Error;
   }
